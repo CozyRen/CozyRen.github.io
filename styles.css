@@ -1946,6 +1946,27 @@ footer p:last-child::before {
     width: 95%;
     padding: 15px;
   }
+  
+  /* Mobile track list styles */
+  .playlist-section {
+    padding: 15px 10px;
+  }
+  
+  .track-list li {
+    padding: 12px 8px;
+  }
+  
+  .track-list li .track-name strong {
+    font-size: 14px;
+  }
+  
+  .track-list li .track-name span {
+    font-size: 12px;
+  }
+  
+  .track-list li:before {
+    display: none;
+  }
 }
 
 /* Добавляем стили для очень малых экранов */
@@ -1976,6 +1997,23 @@ footer p:last-child::before {
   
   .letter-text p {
     font-size: 0.9rem;
+  }
+  
+  /* Extra small screen track list styles */
+  .track-list li {
+    padding: 10px 5px;
+  }
+  
+  .track-list li .track-name strong {
+    font-size: 13px;
+  }
+  
+  .track-list li .track-name span {
+    font-size: 11px;
+  }
+  
+  .track-duration {
+    font-size: 11px;
   }
 }
 
@@ -4822,4 +4860,36 @@ button:focus, .btn-primary:focus, .control-btn:focus, .category-btn:focus {
   background: white; /* White background to contrast with pink text */
   border: 2px solid var(--pink-dark); /* Add border for better visibility */
   text-shadow: 0 0 5px rgba(255, 105, 180, 0.3); /* Slight glow effect */
+}
+
+/* New track name styles */
+.track-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 80%;
+}
+
+/* Mobile styles for track list */
+@media (max-width: 768px) {
+  .track-list li {
+    padding: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .track-list li .track-name {
+    max-width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .track-list li .track-duration {
+    align-self: flex-end;
+    margin-left: 0;
+    margin-top: 5px;
+  }
 }

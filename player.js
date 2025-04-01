@@ -298,8 +298,10 @@ function initMusicPlayer() {
     tracks.forEach((track, index) => {
       const trackItem = document.createElement('li');
       trackItem.innerHTML = `
-        <strong>${track.title}</strong>
-        <span>${track.artist}</span>
+        <div class="track-name">
+          <strong>${track.title}</strong>
+          <span>${track.artist}</span>
+        </div>
         <span class="track-duration">${track.duration}</span>
       `;
       
