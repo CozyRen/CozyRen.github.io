@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Для моей любимой Сагди</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <script src="main.js" defer></script>
+  <script src="game.js" defer></script>
+  <script src="buttons.js" defer></script>
+  <script src="debug.js" defer></script>
+  <script src="relationship_counter.js" defer></script>
+  <script src="love_messages.js" defer></script>
+  <style>
+    /* Стили для глобального контейнера сердечек */
+    #global-hearts-container {
+      pointer-events: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* Позиционируем позади всего контента */
+      overflow: hidden;
+    }
+    
+    /* Стили для сердечек */
+    #global-hearts-container .heart {
+      position: absolute;
+      color: #ff0000; /* Красный цвет как на обычном сердце */
+      opacity: 0.7;
+      transform-origin: center;
+      font-size: 1.2em; /* Уменьшаем размер сердечек */
+      text-shadow: 0 0 3px rgba(255, 0, 0, 0.3); /* Более легкое свечение */
+      user-select: none;
+      z-index: -1; /* Позиционируем позади всего контента */
+      transition: opacity 0.8s ease-in-out; /* Более плавное исчезновение */
+    }
+    
+    /* Анимации для сердечек */
+    #global-hearts-container .heart-pulse {
+      animation: heartPulse 8s ease-in-out infinite; /* Увеличиваем время для плавности */
+    }
+    
+    #global-hearts-container .heart-fade {
+      animation: heartFade 8s ease-in-out infinite; /* Увеличиваем время для плавности */
+    }
+    
+    #global-hearts-container .heart-float {
+      animation: heartFloat 10s ease-in-out infinite alternate; /* Более длительное плавное движение */
+    }
+    
+    #global-hearts-container .heart-disappear {
+      animation: heartDisappear 1.5s ease-out forwards; /* Более плавное исчезновение */
+    }
+    
+    /* Анимация пульсации */
+    @keyframes heartPulse {
+      0% { transform: scale(1) rotate(var(--rotate, 0deg)); opacity: 0.5; }
+      50% { transform: scale(1.08) rotate(var(--rotate, 0deg)); opacity: 0.8; } /* Уменьшаем размах пульсации */
+      100% { transform: scale(1) rotate(var(--rotate, 0deg)); opacity: 0.5; }
+    }
+    
+    /* Анимация появления/исчезновения */
+    @keyframes heartFade {
+      0% { opacity: 0.3; }
+      50% { opacity: 0.7; }
+      100% { opacity: 0.3; }
+    }
+    
+    /* Анимация плавного движения */
+    @keyframes heartFloat {
+      0% { transform: translate(0, 0) rotate(var(--rotate, 0deg)); }
+      100% { transform: translate(var(--float-x, 0), var(--float-y, -15px)) rotate(var(--rotate, 0deg)); } /* Уменьшаем амплитуду движения */
+    }
+    
+    /* Анимация исчезновения */
+    @keyframes heartDisappear {
+      0% { opacity: 0.7; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-15px); }
+    }
+    
+    /* Модификатор кнопки */
+    #view-love-btn.active {
+      background-color: #ff6666;
+      box-shadow: 0 0 8px rgba(255, 102, 102, 0.6);
+    }
+    
+    /* Стиль фона с сердечками */
+    body.hearts-background {
+      position: relative;
+    }
+    
+    body.hearts-background:before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -10;
+      pointer-events: none;
+      background-color: rgba(255, 245, 245, 0.05); /* Очень легкий розовый фон */
+    }
+
+    /* Enhanced styles for the love message generator */
+    #love-generator {
+      position: relative;
+      overflow: hidden;
+    }
+
+    #love-generator::before {
+      content: '';
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100"><path d="M50,30 L60,50 L50,70 L40,50 Z" fill="none" stroke="%23ffb3c4" stroke-width="0.7"/></svg>');
+      opacity: 0.3;
+    }
+
+    .love-message-card {
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(255, 105, 180, 0.15);
+      transition: all 0.4s ease;
+      background: linear-gradient(145deg, #ffffff, #fef8fa);
+      border: 1px solid rgba(255, 182, 193, 0.2);
+      padding: 30px;
+    }
+
+    .love-message-card:hover {
+      box-shadow: 0 15px 40px rgba(255, 105, 180, 0.25);
+      transform: translateY(-5px);
+    }
+
+    .love-message-display {
+      background: #ffffff;
+      min-height: 180px;
+      border-radius: 15px;
+      padding: 40px 35px;
+      position: relative;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255, 182, 193, 0.15);
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .love-message-display:before {
+      content: "❣️";
+      position: absolute;
+      font-size: 1.2rem;
+      opacity: 0.2;
+      top: 15px;
+      left: 15px;
+      color: var(--pink);
+    }
+
+    .love-message-display:after {
+      content: "💕";
+      position: absolute;
+      font-size: 1.2rem;
+      opacity: 0.2;
+      bottom: 15px;
+      right: 15px;
+      color: var(--pink);
+    }
+
+    .message-decoration {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50,20 Q70,5 90,20 T90,50 Q70,80 50,65 Q30,80 10,50 T10,20 Q30,5 50,20 Z" fill="%23ffb3c4" opacity="0.2"/></svg>');
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+    }
+
+    .message-decoration.left {
+      top: 20px;
+      left: 15px;
+      transform: rotate(-20deg);
+    }
+
+    .message-decoration.right {
+      bottom: 20px;
+      right: 15px;
+      transform: rotate(20deg);
+    }
+
+    #love-message-text {
+      font-size: 1.5rem;
+      line-height: 1.7;
+      color: #333;
+      font-family: 'Playfair Display', serif;
+      text-align: center;
+      max-width: 90%;
+      margin: 0 auto;
+      transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      position: relative;
+      z-index: 5;
+    }
+
+    .love-btn {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      background: linear-gradient(145deg, #ff6b9b, #ff4c7e);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      box-shadow: 0 5px 20px rgba(255, 105, 180, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .love-btn:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: all 0.4s ease;
+    }
+
+    .love-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(255, 105, 180, 0.4);
+      background: linear-gradient(145deg, #ff4c7e, #ff6b9b);
+    }
+
+    .love-btn:hover:before {
+      left: 100%;
+    }
+
+    .love-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 3px 10px rgba(255, 105, 180, 0.3);
+    }
+
+    .love-btn .icon {
+      margin-right: 8px;
+      font-size: 1.2rem;
+      display: inline-block;
+      vertical-align: middle;
+      animation: subtle-pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes subtle-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-animation {
+      animation: message-float 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    }
+
+    @keyframes message-float {
+      0% { transform: translateY(15px) scale(0.98); opacity: 0; }
+      70% { transform: translateY(-5px) scale(1.01); }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    #love-message-loader .loader-icon {
+      font-size: 2.2rem;
+      animation: loader-pulse 1.2s infinite ease-in-out;
+    }
+
+    @keyframes loader-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .love-message-display {
+        padding: 30px 20px;
+      }
+      
+      #love-message-text {
+        font-size: 1.3rem;
+      }
+      
+      .love-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Заставка для загрузки -->
+  <div id="loading-screen" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-heart">
+        <i class="fas fa-heart"></i>
+      </div>
+      <p>Загружаю нашу любовь...</p>
+    </div>
+  </div>
+  
+  <!-- Уведомление о режиме офлайн -->
+  <div id="offline-notification" class="offline-notification hidden">
+    <div class="offline-content">
+      <i class="fas fa-wifi-slash"></i>
+      <p>Нет подключения к интернету</p>
+      <p class="offline-subtitle">Некоторые функции могут быть недоступны</p>
+    </div>
+  </div>
+
+  <header>
+    <div class="nav-container">
+      <div class="logo">
+        <a href="#"><span class="heart-icon"><i class="fas fa-heart"></i></span> Для моей Красоточки</a>
+      </div>
+      <nav>
+        <ul class="nav-links" id="nav-links">
+          <li><a href="#message-section"><i class="fas fa-envelope"></i> Сообщение</a></li>
+          <li><a href="#relationship-counter"><i class="fas fa-clock"></i> Счетчик</a></li>
+          <li><a href="#photo-gallery"><i class="fas fa-camera"></i> Галерея</a></li>
+          <li><a href="#music-section"><i class="fas fa-music"></i> Музыка</a></li>
+          <li><a href="#virtual-gifts"><i class="fas fa-gift"></i> Подарки</a></li>
+          <li><a href="#compliment-generator"><i class="fas fa-star"></i> Комплименты</a></li>
+          <li><a href="#relationship-timeline"><i class="fas fa-calendar"></i> История</a></li>
+          <li><a href="#love-poems"><i class="fas fa-feather"></i> Стихи</a></li>
+          <li><a href="#love-game"><i class="fas fa-gamepad"></i> Игра</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Приветственная секция -->
+    <section id="hero-section" class="section">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">Любимая Сагди</h1>
+          <p class="hero-description">Мой небольшой подарочек <span class="red-heart">❤️</span></p>
+          
+          <div class="hero-buttons">
+            <button id="view-love-btn" class="btn-heart">Увидеть любовь</button>
+            <button id="read-letter-btn" class="btn-letter">Прочитать письмо</button>
+          </div>
+        </div>
+      </div>
+      <div id="hearts-container" class="hearts-container"></div>
+    </section>
+
+    <!-- Любимая музыка -->
+    <section id="music-section" class="section">
+      <div class="container">
+        <h2 class="music-title">Любимая музыка</h2>
+        
+        <div class="player-container">
+          <div class="player-wrapper">
+            <div class="current-track">
+              <div class="track-info">
+                <h3 id="track-title">Выберите песню</h3>
+                <p id="track-artist"></p>
+              </div>
+              <div class="love-button">
+                <span><i class="fas fa-heart"></i></span>
+              </div>
+            </div>
+            
+            <div class="progress-container">
+              <span id="current-time">0:00</span>
+              <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+                <div class="progress-handle" id="progress-handle"></div>
+              </div>
+              <span id="duration">0:00</span>
+            </div>
+            
+            <div class="player-controls">
+              <button id="prev-track" class="control-btn">
+                <span class="control-icon"><i class="fas fa-step-backward"></i></span>
+              </button>
+              <button id="play-pause" class="control-btn play-btn">
+                <span class="control-icon"><i class="fas fa-play"></i></span>
+              </button>
+              <button id="next-track" class="control-btn">
+                <span class="control-icon"><i class="fas fa-step-forward"></i></span>
+              </button>
+            </div>
+            
+            <div class="volume-container">
+              <span class="volume-icon"><i class="fas fa-volume-up"></i></span>
+              <div class="volume-bar">
+                <div class="volume" id="volume"></div>
+                <div class="volume-handle" id="volume-handle"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="playlist-section">
+            <h4>Плейлист</h4>
+            <ul id="track-list" class="track-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Особое послание -->
+    <section id="message-section" class="section">
+      <div class="container">
+        <h2>Особое послание для тебя</h2>
+        <p>Нажми на текст, чтобы увидеть больше</p>
+        
+        <div class="special-message-container">
+          <div id="special-message" class="special-message">
+            <p>Ты - лучшее, что случилось в моей жизни. Твоя улыбка освещает мой мир, а твой смех делает его волшебным. Я хочу, чтобы ты знала, как сильно я тебя люблю, и как ты делаешь каждый мой день особенным.</p>
+            <div class="signature">
+              <span>Я твой навсегда</span> <span class="heart-emoji"><i class="fas fa-heart"></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Генератор любовных сообщений -->
+    <section id="love-generator" class="section">
+      <div class="container">
+        <h2>Нежные признания для любимой</h2>
+        <p>Слова, которые идут от самого сердца</p>
+        
+        <div class="card love-message-card">
+          <div class="love-message-display">
+            <div class="message-decoration left"></div>
+            <div class="message-decoration right"></div>
+            <p id="love-message-text"></p>
+            <div id="love-message-loader" class="hidden">
+              <span class="loader-icon">❤️</span>
+            </div>
+          </div>
+          
+          <div class="text-center">
+            <button id="generate-love-message" class="btn-primary love-btn">
+              <span class="icon">💌</span> Новое признание
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Время нашей любви -->
+    <section id="relationship-counter" class="section">
+      <div class="container">
+        <h2>Время нашей любви</h2>
+        <p>Каждая секунда с тобой, моя чудесная Сагди, бесценна</p>
+        
+        <div class="counter-container">
+          <div class="counter-item">
+            <div class="counter-icon">
+              <i class="far fa-calendar"></i>
+            </div>
+            <div class="counter" id="days-counter">775</div>
+            <div class="counter-label">дней</div>
+            <div class="counter-sublabel">примерно 25 месяцев и 1 дней</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-icon">
+              <i class="far fa-clock"></i>
+            </div>
+            <div class="counter" id="hours-counter">15</div>
+            <div class="counter-label">часов</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-icon">
+              <i class="far fa-clock"></i>
+            </div>
+            <div class="counter" id="minutes-counter">46</div>
+            <div class="counter-label">минут</div>
+          </div>
+          <div class="counter-item">
+            <div class="counter-icon">
+              <i class="far fa-clock"></i>
+            </div>
+            <div class="counter" id="seconds-counter">56</div>
+            <div class="counter-label">секунд</div>
+          </div>
+        </div>
+        
+        <div class="counter-item moments-counter">
+          <div class="counter-icon">
+            <i class="far fa-star"></i>
+          </div>
+          <div class="counter" id="moments-counter">1 116 000</div>
+          <div class="counter-label">моментов счастья</div>
+          <div class="counter-sublabel">и бесконечное количество причин любить тебя, моя драгоценная Сагди</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Наши воспоминания -->
+    <section id="photo-gallery" class="section pink-gradient">
+      <div class="container">
+        <h2>Наши воспоминания</h2>
+        <p>Самые прекрасные моменты, проведенные вместе</p>
+        
+        <div class="memories-slider">
+          <div class="memories-container">
+            <div class="memory-slide">
+              <img src="https://via.placeholder.com/500x300.png?text=Наш+первый+ужин" alt="Наш первый ужин">
+              <div class="memory-caption">
+                <h3>Наш первый ужин</h3>
+                <p>Нажми, чтобы прочитать историю</p>
+              </div>
+            </div>
+            
+            <div class="memory-slide">
+              <img src="https://via.placeholder.com/500x300.png?text=Весенний+парк" alt="Весенний парк">
+              <div class="memory-caption">
+                <h3>Весенний парк</h3>
+                <p>Нажми, чтобы прочитать историю</p>
+              </div>
+            </div>
+            
+            <div class="memory-slide">
+              <img src="https://via.placeholder.com/500x300.png?text=Наше+лето" alt="Наше лето">
+              <div class="memory-caption">
+                <h3>Наше лето</h3>
+                <p>Нажми, чтобы прочитать историю</p>
+              </div>
+            </div>
+            
+            <div class="memory-slide">
+              <img src="https://via.placeholder.com/500x300.png?text=Снежная+сказка" alt="Снежная сказка">
+              <div class="memory-caption">
+                <h3>Снежная сказка</h3>
+                <p>Нажми, чтобы прочитать историю</p>
+              </div>
+            </div>
+          </div>
+          
+          <button class="slider-nav prev-slide"><i class="fas fa-chevron-left"></i></button>
+          <button class="slider-nav next-slide"><i class="fas fa-chevron-right"></i></button>
+          
+          <div class="slider-progress">
+            <div class="slider-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Виртуальные подарки -->
+    <section id="virtual-gifts" class="section">
+      <div class="container">
+        <h2><i class="fas fa-gift"></i> Виртуальные подарки</h2>
+        <p>Выбери подарок, который тебе понравится</p>
+        
+        <div class="section-intro">
+          <div class="gift-intro-icon">
+            <i class="fas fa-heart"></i>
+          </div>
+          <p class="gift-intro-text">Каждый подарок - это выражение моих чувств к тебе. Чем больше сердечек ты соберешь в игре, тем больше подарков сможешь открыть!</p>
+        </div>
+        
+        <div class="gifts-container">
+          <!-- Подарки будут добавлены динамически через JavaScript -->
+        </div>
+        
+        <div class="text-center gifts-game-link">
+          <p>Хочешь разблокировать больше подарков?</p>
+          <a href="#love-game" class="btn-primary">
+            <i class="fas fa-gamepad"></i> Играй в "Поймай мое сердце"
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Комплименты для нежной Сагди -->
+    <section id="compliment-generator" class="section pink-gradient">
+      <div class="container">
+        <h2>Комплименты для нежной Сагди</h2>
+        <p>Нажми кнопку, чтобы получить особый комплимент для моей драгоценной</p>
+        
+        <div class="card">
+          <div class="category-buttons">
+            <button class="category-btn active" data-category="all">
+              <span class="icon">✨</span> Все категории
+            </button>
+            <button class="category-btn" data-category="beauty">
+              <span class="icon">👑</span> Красота
+            </button>
+            <button class="category-btn" data-category="personality">
+              <span class="icon">⭐</span> Личность
+            </button>
+            <button class="category-btn" data-category="love">
+              <span class="icon">❤️</span> Любовь
+            </button>
+            <button class="category-btn" data-category="fun">
+              <span class="icon">😊</span> Веселье
+            </button>
+          </div>
+          
+          <div class="compliment-display">
+            <p id="compliment-text">Нажми на кнопку ниже, чтобы получить случайный комплимент</p>
+            <div id="compliment-loader" class="hidden">
+              <span class="loader-icon">✨</span>
+            </div>
+          </div>
+          
+          <div class="text-center">
+            <button id="generate-compliment" class="btn-primary">
+              <span class="icon">❤️</span> Новый комплимент
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- История нашей любви -->
+    <section id="relationship-timeline" class="section pink-gradient">
+      <div class="container">
+        <h2>Наша история любви</h2>
+        <p>Все важные моменты нашего пути вместе</p>
+        
+        <div class="timeline-container">
+          <div id="timeline-events" class="timeline-events"></div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Стихи о любви -->
+    <section id="love-poems" class="section">
+      <div class="container">
+        <h2>Стихи о любви</h2>
+        <p>Слова, которые выражают мои чувства к тебе</p>
+        
+        <div class="card">
+          <div id="poem-container" class="poem-container">
+            <div id="poem-loader" class="poem-loader hidden">
+              <span class="loader-icon"><i class="fas fa-feather"></i></span>
+            </div>
+            <div class="poem-content">
+              <div class="poem-icon">
+                <i class="fas fa-heart"></i>
+              </div>
+              <p id="poem-text" class="poem-text">
+                Загрузка стиха...
+              </p>
+              <div class="poem-heart">
+                <i class="fas fa-heart"></i>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center">
+            <button id="generate-poem" class="btn-primary">
+              <span class="icon"><i class="fas fa-feather"></i></span> Другой стих
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Игра "Поймай мое сердце" -->
+    <section id="love-game" class="section pink-gradient">
+      <div class="container">
+        <h2>Игра "Поймай мое сердце"</h2>
+        <p>Собирай сердечки и набирай очки, солнышко моё!</p>
+        
+        <div class="game-container">
+          <div class="game-stats">
+            <div class="game-score">
+              <span>Счет: </span>
+              <span id="game-score">0</span>
+            </div>
+            <div class="game-time">
+              <span>Время: </span>
+              <span id="game-time">30</span>
+            </div>
+            <div class="game-record">
+              <span>Рекорд: </span>
+              <span id="game-record">0</span>
+            </div>
+          </div>
+          
+          <div id="game-area" class="game-area">
+            <div id="game-start" class="game-overlay">
+              <h3>Готова играть, моя прелесть?</h3>
+              <button id="start-game" class="btn-primary" onclick="try { window.manualStartGame ? window.manualStartGame() : (window.startGame ? window.startGame() : (this.parentNode.classList.add('hidden'))); } catch(e) { console.error('Error starting game:', e); this.parentNode.classList.add('hidden'); }">Начать игру</button>
+            </div>
+            <div id="game-end" class="game-overlay hidden">
+              <h3>Игра окончена!</h3>
+              <p>Твой результат: <span id="final-score">0</span></p>
+              <button id="restart-game" class="btn-primary">Играть снова</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>С любовью от твоего милого Богданчика</p>
+      <p>2024</p>
+    </div>
+  </footer>
+
+  <!-- Модальное окно для временной линии -->
+  <div id="timeline-modal" class="modal">
+    <div class="modal-content">
+      <span class="modal-close">&times;</span>
+      <h3 id="modal-title"></h3>
+      <p id="modal-date" class="modal-date"></p>
+      <p id="modal-description"></p>
+    </div>
+  </div>
+  
+  <!-- Модальное окно для подарков -->
+  <div id="gift-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-gift" class="modal-close">&times;</span>
+      <div class="gift-modal-header">
+        <h3 id="gift-title"></h3>
+      </div>
+      <div class="gift-modal-body">
+        <div class="gift-modal-image">
+          <img id="gift-image" src="" alt="">
+        </div>
+        <p id="gift-message" class="gift-message"></p>
+      </div>
+      <div class="gift-modal-footer">
+        <button id="send-gift-btn" class="btn-primary">Получить подарок</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Переключатель темы -->
+  <div class="theme-toggle" id="theme-toggle">
+    <i class="theme-icon fas fa-moon"></i>
+  </div>
+
+  <!-- Скрипты -->
+  <script src="utils.js"></script>
+  <script src="debug.js"></script>
+  <script>
+    // Перед загрузкой других скриптов добавляем отладочную функцию
+    window.gameDebug = function(message) {
+      console.log('%c[GAME DEBUG] ' + message, 'color: #ff69b4; font-weight: bold;');
+    };
+    
+    // Глобальная функция для запуска игры (резервный вариант)
+    window.manualStartGame = function() {
+      gameDebug('Ручной запуск игры');
+      const gameArea = document.getElementById('game-area');
+      const startGameBtn = document.getElementById('start-game');
+      const gameStart = document.getElementById('game-start');
+      
+      if (gameStart) {
+        gameStart.classList.add('hidden');
+      }
+      
+      if (typeof window.startGame === 'function') {
+        window.startGame();
+      } else if (typeof initLoveGame === 'function') {
+        initLoveGame();
+        setTimeout(function() {
+          if (typeof window.startGame === 'function') {
+            window.startGame();
+          }
+        }, 500);
+      } else {
+        alert('Функция запуска игры не найдена!');
+      }
+    };
+    
+    // Добавляем обработчик для кнопки начала игры после загрузки страницы
+    window.addEventListener('load', function() {
+      var startGameBtn = document.getElementById('start-game');
+      if (startGameBtn) {
+        gameDebug('Найдена кнопка "Начать игру", добавляем прямой обработчик');
+        
+        startGameBtn.onclick = function(e) {
+          gameDebug('Клик по кнопке "Начать игру" через прямой onclick');
+          e.preventDefault();
+          window.manualStartGame();
+          return false;
+        };
+      }
+    });
+  </script>
+  <script src="letter.js"></script>
+  <script src="poems.js"></script>
+  <script src="gifts.js"></script>
+  <script src="player.js"></script>
+  <script src="compliments.js"></script>
+  <script src="love_messages.js"></script>
+  <script src="buttons.js"></script>
+  <script src="relationship_counter.js"></script>
+  <script src="game.js"></script>
+  <script src="main.js"></script>
+  
+  <!-- Дополнительная инициализация для стихов -->
+  <script>
+    // Активирует функцию обработки стихов после загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Ручная инициализация стихов');
+      
+      // Деактивируем старые скрипты, чтобы они не конфликтовали
+      // Теперь все управление стихами происходит в функции initLovePoems в poems.js
+      
+      // Проверяем работу кнопки начала игры
+      setTimeout(function() {
+        var startGameBtn = document.getElementById('start-game');
+        if (startGameBtn) {
+          gameDebug('Повторная проверка кнопки "Начать игру"');
+          if (!startGameBtn.hasAttribute('data-initialized')) {
+            gameDebug('Кнопка не инициализирована, добавляем резервный обработчик');
+            startGameBtn.setAttribute('data-initialized', 'true');
+            
+            startGameBtn.addEventListener('click', function(e) {
+              gameDebug('Клик по кнопке "Начать игру" через резервный обработчик');
+              e.preventDefault();
+              window.manualStartGame();
+            });
+          }
+        }
+      }, 1000);
+    });
+  </script>
+  
+  <!-- Скрытые полные стихи для работы переключателя -->
+  <div style="display: none">
+    <div class="full-poem">
+      Я люблю тебя без причин и условий,<br>
+      Как солнце любит небосвод.<br>
+      Моя любовь не знает сомнений и оков,<br>
+      Она свободна и чиста, как первый снег.
+    </div>
+    <div class="full-poem">
+      Твои глаза как два озера,<br>
+      В них утонуть готов любой.<br>
+      Ты - вдохновение поэтов,<br>
+      Я счастлив быть всегда с тобой.
+    </div>
+    <div class="full-poem">
+      В мире, где судьбы сплетаются сложно,<br>
+      Нашу любовь не измерить словами.<br>
+      Я обещаю, что всё возможно,<br>
+      Пока ты рядом, и пока мы вместе с тобой.
+    </div>
+    <div class="full-poem">
+      Ты - мой свет в темноте ночи,<br>
+      Мой маяк, что ведёт сквозь бури.<br>
+      В твоих объятиях все невзгоды<br>
+      Становятся легче и не страшны.
+    </div>
+    <div class="full-poem">
+      Как сложно порой подобрать слова,<br>
+      Чтоб выразить всю глубину чувств к тебе.<br>
+      Но знай, что в сердце моём навсегда<br>
+      Ты - главное сокровище в моей судьбе.
+    </div>
+  </div>
+</body>
+</html>
