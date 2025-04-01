@@ -43,7 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initComplimentGenerator === 'function') initComplimentGenerator();
     if (typeof initLovePoems === 'function') initLovePoems();
     if (typeof initLoveMessageGenerator === 'function') initLoveMessageGenerator();
-    if (typeof initMemoriesSlider === 'function') initMemoriesSlider();
     if (typeof initVirtualGifts === 'function') initVirtualGifts();
     if (typeof initMusicPlayerInteractions === 'function') initMusicPlayerInteractions();
     
