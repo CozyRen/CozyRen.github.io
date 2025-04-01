@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Для моей любимой Сагди</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Great+Vibes&family=Cormorant+Garamond:wght@400;500;600;700&family=Lora:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Parisienne&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
   <script src="main.js" defer></script>
@@ -630,11 +630,11 @@
           <div id="game-area" class="game-area">
             <div id="game-start" class="game-overlay">
               <h3>Готова играть, моя прелесть?</h3>
-              <button id="start-game" class="btn-primary" onclick="try { window.manualStartGame ? window.manualStartGame() : (window.startGame ? window.startGame() : (this.parentNode.classList.add('hidden'))); } catch(e) { console.error('Error starting game:', e); this.parentNode.classList.add('hidden'); }">Начать игру</button>
+              <button id="start-game" class="btn-primary">Начать игру</button>
             </div>
             <div id="game-end" class="game-overlay hidden">
               <h3>Игра окончена!</h3>
-              <p>Твой результат: <span id="final-score">0</span></p>
+              <p>Твой результат: <span id="final-score" class="red-score">0</span></p>
               <button id="restart-game" class="btn-primary">Играть снова</button>
             </div>
           </div>
@@ -646,7 +646,6 @@
   <footer>
     <div class="container">
       <p>С любовью от твоего милого Богданчика</p>
-      <p>2024</p>
     </div>
   </footer>
 
@@ -680,9 +679,7 @@
   </div>
   
   <!-- Переключатель темы -->
-  <div class="theme-toggle" id="theme-toggle">
-    <i class="theme-icon fas fa-moon"></i>
-  </div>
+  
 
   <!-- Скрипты -->
   <script src="utils.js"></script>

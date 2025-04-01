@@ -234,6 +234,18 @@ function initLoveGame() {
       gameStart.classList.add('hidden');
     }
     
+    // Скрываем экран окончания игры при рестарте
+    if (gameEnd) {
+      gameEnd.classList.add('hidden');
+      gameEnd.style.opacity = '0';
+      
+      // Удаляем сообщение о доступных подарках, если оно есть
+      const existingMessage = gameEnd.querySelector('.available-gifts-message');
+      if (existingMessage) {
+        existingMessage.remove();
+      }
+    }
+    
     gameArea.classList.add('game-started');
     document.body.classList.add('game-active');
     
@@ -544,7 +556,7 @@ function initLoveGame() {
         scoreDisplay.classList.add('score-update');
         setTimeout(() => {
           scoreDisplay.classList.remove('score-update');
-        }, 300);
+        }, 500);
         
         // Сохраняем текущий счет в глобальной переменной для отладки
         window.currentGameScore = score;
@@ -564,7 +576,7 @@ function initLoveGame() {
             scoreSpan.classList.add('score-update');
             setTimeout(() => {
               scoreSpan.classList.remove('score-update');
-            }, 300);
+            }, 500);
             
             // Сохраняем текущий счет в глобальной переменной для отладки
             window.currentGameScore = score;
@@ -1040,11 +1052,14 @@ function initLoveGame() {
         .time-running-out {
           animation: timeWarning 0.5s infinite alternate;
           color: red !important;
+          text-shadow: 0 0 10px rgba(255, 0, 0, 0.8) !important;
+          font-weight: bold !important;
+          font-size: 1.3rem !important;
         }
         
         @keyframes timeWarning {
-          from { opacity: 0.6; }
-          to { opacity: 1; transform: scale(1.1); }
+          from { opacity: 0.7; transform: scale(1); }
+          to { opacity: 1; transform: scale(1.3); text-shadow: 0 0 15px rgba(255, 0, 0, 0.9) !important; }
         }
         
         /* Анимация обновления счета */
@@ -1054,7 +1069,7 @@ function initLoveGame() {
         
         @keyframes scoreUpdate {
           0% { transform: scale(1); }
-          50% { transform: scale(1.3); color: #ff6b95; }
+          50% { transform: scale(1.5); color: red; text-shadow: 0 0 15px rgba(255, 0, 0, 0.8); }
           100% { transform: scale(1); }
         }
         
@@ -1166,13 +1181,13 @@ function initLoveGame() {
         
         .points-animation {
           position: absolute;
-          color: white;
-          font-size: 1.5rem;
+          color: red;
           font-weight: bold;
-          text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-          z-index: 202;
+          font-size: 18px;
+          animation: points-float 1s ease-out forwards;
+          z-index: 6;
           pointer-events: none;
-          animation: floatUp 1s ease-out forwards;
+          text-shadow: 0 0 5px white, 0 0 10px white;
         }
         
         .special-points {
@@ -1187,15 +1202,15 @@ function initLoveGame() {
           text-shadow: 0 0 8px rgba(0, 255, 170, 0.7);
         }
         
-        @keyframes floatUp {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(-60px); opacity: 0; }
-        }
-        
-        @keyframes pop {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.5); opacity: 1; }
-          100% { transform: scale(0); opacity: 0; }
+        @keyframes points-float {
+          0% {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(-50px) scale(1.8);
+            opacity: 0;
+          }
         }
         
         .heart-flash {
@@ -1249,9 +1264,9 @@ function initLoveGame() {
         }
         
         @keyframes scoreHighlight {
-          0% { color: white; }
-          50% { color: gold; text-shadow: 0 0 10px gold; transform: scale(1.2); }
-          100% { color: white; }
+          0% { color: #333; }
+          50% { color: red; text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); transform: scale(1.2); }
+          100% { color: #333; }
         }
         
         /* Анимация высветления секции */
@@ -1322,6 +1337,8 @@ function initLoveGame() {
     const updatedStartBtn = document.getElementById('start-game');
     
     if (updatedStartBtn) {
+      console.log('Кнопка start-game успешно обновлена, добавляем новые обработчики');
+      
       // Добавляем новый обработчик
       updatedStartBtn.addEventListener('click', function(e) {
         console.log('Клик по кнопке start-game');
@@ -1333,6 +1350,7 @@ function initLoveGame() {
           this.classList.remove('button-click');
         }, 200);
         
+        console.log('Вызываем функцию startGame()');
         startGame();
       });
       
@@ -1343,6 +1361,8 @@ function initLoveGame() {
         startGame();
         return false;
       };
+    } else {
+      console.error('Не удалось найти обновленную кнопку start-game!');
     }
   }
   
@@ -1360,6 +1380,8 @@ function initLoveGame() {
     const updatedRestartBtn = document.getElementById('restart-game');
     
     if (updatedRestartBtn) {
+      console.log('Кнопка restart-game успешно обновлена, добавляем новые обработчики');
+      
       // Добавляем новый обработчик
       updatedRestartBtn.addEventListener('click', function(e) {
         console.log('Клик по кнопке restart-game');
@@ -1371,6 +1393,7 @@ function initLoveGame() {
           this.classList.remove('button-click');
         }, 200);
         
+        console.log('Вызываем функцию startGame() для рестарта игры');
         startGame();
       });
       
@@ -1381,6 +1404,8 @@ function initLoveGame() {
         startGame();
         return false;
       };
+    } else {
+      console.error('Не удалось найти обновленную кнопку restart-game!');
     }
   }
   
@@ -1401,14 +1426,7 @@ function initLoveGame() {
   // Экспортируем функцию startGame в глобальный контекст
   window.startGame = startGame;
   
-  // Через короткий таймаут пробуем запустить игру автоматически (для тестирования)
-  setTimeout(() => {
-    console.log('Пробуем автоматически запустить игру для тестирования...');
-    if (gameStart && !gameStart.classList.contains('hidden') && !isGameRunning) {
-      startGame();
-    }
-  }, 3000);
-  
+  // Удаляем автоматический запуск игры, чтобы игра запускалась только по клику на кнопку
   console.log('Инициализация любовной игры завершена');
   return startGame; // Возвращаем функцию для возможного ручного вызова
 }

@@ -326,27 +326,9 @@ function initMobileMenu() {
 
 // Инициализация переключателя темы
 function initThemeToggle() {
-  const themeToggle = document.getElementById('theme-toggle');
-  const themeIcon = themeToggle ? themeToggle.querySelector('.theme-icon') : null;
-  
-  if (themeToggle && themeIcon) {
-    // Проверяем сохраненную тему
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) {
-      document.body.classList.add('dark-mode');
-      themeIcon.classList.remove('fa-moon');
-      themeIcon.classList.add('fa-sun');
-    }
-    
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-mode');
-      themeIcon.classList.toggle('fa-moon');
-      themeIcon.classList.toggle('fa-sun');
-      
-      // Сохраняем состояние темы
-      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-    });
-  }
+  // Функциональность отключена по запросу
+  console.log('Theme toggle functionality disabled');
+  return;
 }
 
 // Экспортируем функции

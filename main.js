@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация базовых модулей
     if (typeof initLoadingScreen === 'function') initLoadingScreen();
     if (typeof initConnectionMonitor === 'function') initConnectionMonitor();
-    if (typeof initThemeToggle === 'function') initThemeToggle();
     if (typeof initSmoothScrolling === 'function') initSmoothScrolling();
     
     // Инициализация кнопок и интерактивных элементов
